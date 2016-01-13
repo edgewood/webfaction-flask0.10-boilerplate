@@ -1,0 +1,38 @@
+"""Settings for ``fabfile.py``.
+
+Replace these settings with your Webfaction username and your desired project
+name. Usually both will be the same unless you are deploying multiple Django
+apps on the same Webfaction account.
+
+"""
+import os
+
+
+ENV_USER = 'username'                         # Webfaction username
+ENV_PASS = 'XXXXXXXX'                         # Webfaction password
+ENV_HOSTS = ['{0}.webfactional.com'.format(ENV_USER), ]
+PROJECT_NAME = 'projectname'
+
+APP_NAME = '{0}_flask'.format(PROJECT_NAME)
+STATIC_NAME = '{0}_static'.format(PROJECT_NAME)
+
+DB_USER = '{0}_{1}'.format(ENV_USER, PROJECT_NAME)
+DB_NAME = DB_USER
+DB_PASSWORD = 'XXXXXX'
+
+VENV_NAME = 'venv'
+VENV_COMMAND = 'pyvenv-3.5 {0}'.format(VENV_NAME)
+
+# The default email that comes from the application.  This might
+# be webmaster@raleighjaycees.org, or an app-specific email address
+EMAIL_DEFAULT_FROM_EMAIL = 'webmaster@raleighjaycees.org'
+EMAIL_INBOX = '{0}_{1}'.format(ENV_USER, PROJECT_NAME)
+EMAIL_PASSWORD = 'XXXXXX'
+
+
+ADMIN_NAME = 'Raleigh Jaycee Webmaster'
+ADMIN_EMAIL = 'webmaster@raleighjaycees.org'
+
+
+PROJECT_ROOT = os.path.realpath(os.path.dirname(__file__))
+REMOTE_PROJECT_ROOT = '$HOME/webapps/{}/'.format(PROJECT_NAME)
