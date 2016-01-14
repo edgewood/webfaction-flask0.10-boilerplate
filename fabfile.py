@@ -35,18 +35,18 @@ PROJECT_NAME = fab_settings.PROJECT_NAME
 # HIGH LEVEL TASKS
 # ****************************************************************************
 def install_everything():
-    install_local_repo()
     install_server()
+    install_local_repo()
     local_link_repo_with_remote_repo()
     first_deployment()
 
 
 def onetime_setup():
+    """ only has to be done one time ever """
     api_add_git_domain()
 
 
 def first_deployment():
-    run_delete_previous_attempts()
     run_install_requirements()
     run_deploy_website(with_manage_py=False)
     run_prepare_local_settings()
@@ -63,6 +63,8 @@ def install_local_repo():
 
 
 def install_server():
+    run_delete_previous_attempts()
+    api_add_applications()
     run_create_virtualenv()
     run_create_git_repo()
     run_delete_index_files()
@@ -170,21 +172,23 @@ def run_delete_index_files():
 
 
 def run_delete_previous_attempts():
-    run('rm -rf $HOME/webapps/{0}/myproject'.format(
-        fab_settings.DJANGO_APP_NAME))
-    with cd('$HOME'):
-        run('touch .pgpass')
-        run("sed '/{0}/d' .pgpass > .pgpass_tmp".format(fab_settings.DB_NAME))
-        run('mv .pgpass_tmp .pgpass')
-    run('crontab -l > crontab_bak')
-    run("sed '/{0}.sh/d' crontab_bak > crontab_tmp".format(
-        fab_settings.PROJECT_NAME))
-    run('crontab crontab_tmp')
-    run('rm crontab_tmp')
+    api_remove_applications()
+    run('rm -rf $HOME/webapps/{0}/'.format(fab_settings.APP_NAME))
+    run('rm -rf $HOME/webapps/{0}/'.format(fab_settings.STATIC_NAME))
+# TODO
+#    with cd('$HOME'):
+#        run('touch .pgpass')
+#        run("sed '/{0}/d' .pgpass > .pgpass_tmp".format(fab_settings.DB_NAME))
+#        run('mv .pgpass_tmp .pgpass')
+#    run('crontab -l > crontab_bak')
+#    run("sed '/{0}.sh/d' crontab_bak > crontab_tmp".format(
+#        fab_settings.PROJECT_NAME))
+#    run('crontab crontab_tmp')
+#    run('rm crontab_tmp')
 
 
 def run_create_virtualenv():
-    with cd(fab_settings.REMOTE_PROJECT_ROOT):
+    with cd(fab_settings.REMOTE_APP_ROOT):
         run(fab_settings.VENV_COMMAND)
 
 
@@ -260,7 +264,7 @@ def run_prepare_local_settings():
 
 # a class to automatically add the session_id to Webfaction API calls 
 # and provide related convenience methods
-class Webfaction:
+class _Webfaction:
   server = None
   session_id = None
 
@@ -287,11 +291,26 @@ class Webfaction:
     return len(self.get_app(appname)) == 1
 
 
+def api_add_applications():
+    _webfaction_create_app(fab_settings.APP_NAME, fab_settings.APP_TYPE)
+    _webfaction_create_app(fab_settings.STATIC_NAME, fab_settings.STATIC_TYPE)
+
+
+def api_remove_applications():
+    _webfaction_delete_app(fab_settings.APP_NAME)
+    _webfaction_delete_app(fab_settings.STATIC_NAME)
+
+
+def _webfaction_init(f):
+    if not 'wf' in f.func_globals:
+        f.func_globals['wf'] = _Webfaction() 
+
+    return f
+
+
+@_webfaction_init
 def api_add_git_domain():
     """ add git.username.webfactional.com to username.webfactional.com """
-    if not 'wf' in globals():
-        wf = Webfaction() 
-
     # get a list of sites that have the username site in subdomains
     username_site = '{0}.webfactional.com'.format(env.user)
     site = filter(lambda s: username_site in s['subdomains'], wf.list_websites())
@@ -303,22 +322,32 @@ def api_add_git_domain():
         if git_site not in site['subdomains']:
             site['subdomains'].append(git_site)
             wf.update_website(site['name'], site['ip'], site['https'],
-                    site['subdomains'], *site['website_apps'])
+                    site['subdomains'], *site['site_apps'])
     else:
         print "Could not add {0} to webfaction {1}".format(git_site, username_site)
         sys.exit(1)
 
 
-def _webfaction_create_app(app,app_type,app_extra):
+@_webfaction_init
+def _webfaction_create_app(app_name,app_type,app_extra=''):
     """creates a app on webfaction of the named type using the webfaction public API."""
-    if not 'wf' in globals():
-        wf = Webfaction() 
-
     try:
-        response = wf.create_app(session_id, app, app_type, False, app_extra)
+        response = wf.create_app(app_name, app_type, False, app_extra)
         print "App on webfaction created: %s" % response
         return response
 
     except xmlrpclib.Fault:
-        print "could not create app on webfaction %s, app name maybe already in use" % app
+        print "could not create app on webfaction %s, app name maybe already in use" % app_name
         sys.exit(1)
+
+@_webfaction_init
+def _webfaction_delete_app(app_name):
+    """deletes a named app on webfaction using the webfaction public API."""
+    try:
+        response = wf.delete_app(app_name)
+        print "App on webfaction deleted: %s" % response
+        return response
+
+    except xmlrpclib.Fault:
+        print "could not delete app on webfaction %s" % app_name
+        return False

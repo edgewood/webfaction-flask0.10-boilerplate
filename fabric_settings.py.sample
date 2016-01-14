@@ -16,6 +16,10 @@ PROJECT_NAME = 'projectname'
 APP_NAME = '{0}_flask'.format(PROJECT_NAME)
 STATIC_NAME = '{0}_static'.format(PROJECT_NAME)
 
+# See https://docs.webfaction.com/xmlrpc-api/apps.html#application-types for types
+APP_TYPE = 'mod_wsgi4421-python35'          # mod_wsgi 4.4.21/Python 3.5
+STATIC_TYPE = 'static_only'                 # Static only (no .htaccess)
+
 DB_USER = '{0}_{1}'.format(ENV_USER, PROJECT_NAME)
 DB_NAME = DB_USER
 DB_PASSWORD = 'XXXXXX'
@@ -35,4 +39,4 @@ ADMIN_EMAIL = 'webmaster@raleighjaycees.org'
 
 
 PROJECT_ROOT = os.path.realpath(os.path.dirname(__file__))
-REMOTE_PROJECT_ROOT = '$HOME/webapps/{}/'.format(PROJECT_NAME)
+REMOTE_APP_ROOT = '$HOME/webapps/{}/'.format(APP_NAME)
