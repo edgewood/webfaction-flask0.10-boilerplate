@@ -27,6 +27,8 @@ DB_PASSWORD = 'XXXXXX'
 VENV_NAME = 'venv'
 VENV_COMMAND = 'pyvenv-3.5 {0}'.format(VENV_NAME)
 
+GIT_REPO_NAME = PROJECT_NAME
+
 # The default email that comes from the application.  This might
 # be webmaster@raleighjaycees.org, or an app-specific email address
 EMAIL_DEFAULT_FROM_EMAIL = 'webmaster@raleighjaycees.org'
