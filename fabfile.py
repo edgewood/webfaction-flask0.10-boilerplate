@@ -9,6 +9,7 @@ Make sure to setup your ``fabric_settings.py`` first. As a start, just copy
 from __future__ import with_statement
 
 import os
+import sys
 import xmlrpclib
 
 from fabric.api import (
@@ -168,13 +169,11 @@ def run_create_ssh_dir():
 
 def run_delete_index_files():
     run('rm -f $HOME/webapps/{0}/index.html'.format(
-        fab_settings.STATIC_APP_NAME))
+        fab_settings.STATIC_NAME))
 
 
 def run_delete_previous_attempts():
     api_remove_applications()
-    run('rm -rf $HOME/webapps/{0}/'.format(fab_settings.APP_NAME))
-    run('rm -rf $HOME/webapps/{0}/'.format(fab_settings.STATIC_NAME))
 # TODO
 #    with cd('$HOME'):
 #        run('touch .pgpass')
@@ -319,10 +318,19 @@ def api_add_git_domain():
     if site:
         site = site[0]
         git_site = 'git.{0}'.format(username_site)
+
         if git_site not in site['subdomains']:
+            # create domain
+            wf.create_domain(username_site, 'git')
+
+            # create app
+            _webfaction_create_app('git', fab_settings.GIT_TYPE, 
+                    app_extra=fab_settings.ENV_PASS)
+
+            # create website with new domain and app
             site['subdomains'].append(git_site)
-            wf.update_website(site['name'], site['ip'], site['https'],
-                    site['subdomains'], *site['site_apps'])
+            wf.create_website('git', site['ip'], True,
+                    ['git.{}'.format(username_site)], ['git', '/'])
     else:
         print "Could not add {0} to webfaction {1}".format(git_site, username_site)
         sys.exit(1)
@@ -332,21 +340,25 @@ def api_add_git_domain():
 def _webfaction_create_app(app_name,app_type,app_extra=''):
     """creates a app on webfaction of the named type using the webfaction public API."""
     try:
-        response = wf.create_app(app_name, app_type, False, app_extra)
-        print "App on webfaction created: %s" % response
-        return response
+        if app_name not in [ a['name'] for a in wf.list_apps() ]:
+            response = wf.create_app(app_name, app_type, False, app_extra)
+            print "App on webfaction created: %s" % response
+            return response
+        else:
+            print("App name {0} already in use".format(app_name))
 
     except xmlrpclib.Fault:
-        print "could not create app on webfaction %s, app name maybe already in use" % app_name
+        print "could not create app %s on webfaction, app name maybe already in use" % app_name
         sys.exit(1)
 
 @_webfaction_init
 def _webfaction_delete_app(app_name):
     """deletes a named app on webfaction using the webfaction public API."""
     try:
-        response = wf.delete_app(app_name)
-        print "App on webfaction deleted: %s" % response
-        return response
+        if app_name in [ a['name'] for a in wf.list_apps() ]:
+            response = wf.delete_app(app_name)
+            print "App on webfaction deleted: %s" % response
+            return response
 
     except xmlrpclib.Fault:
         print "could not delete app on webfaction %s" % app_name
