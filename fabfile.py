@@ -120,7 +120,7 @@ def local_init_flask_project():
     with lcd(fab_settings.PROJECT_ROOT):
         # download remote default Apache .conf
         local('mkdir -p apache2/conf')
-        with cd(fab_settings.PROJECT_ROOT):
+        with cd(fab_settings.REMOTE_APP_ROOT):
             get(remote_path='apache2/conf/httpd.conf',
                 local_path ='apache2/conf/httpd.conf')
         # prepare httpd.conf
@@ -142,7 +142,7 @@ def local_initial_commit():
         local('git commit -am "Initial commit."')
 
 def local_create_virtualenv():
-    with cd(fab_settings.PROJECT_ROOT):
+    with lcd(fab_settings.PROJECT_ROOT):
         local(fab_settings.VENV_COMMAND)
 
 
@@ -264,30 +264,36 @@ def run_prepare_local_settings():
 # a class to automatically add the session_id to Webfaction API calls 
 # and provide related convenience methods
 class _Webfaction:
-  server = None
-  session_id = None
+    def __init__(self):
+        self.server = None
+        self.session_id = None
 
-  def __init__(self):
-    self.server = xmlrpclib.ServerProxy('https://api.webfaction.com/')
-    self.session_id, account = self.server.login(fab_settings.ENV_USER, fab_settings.ENV_PASS)
 
-  def _add_session_id(self, fn):
-    def wrap(*args):
-      return fn(self.session_id, *args)
-    return wrap
+    def _add_session_id(self, fn):
+        def wrap(*args):
+            return fn(self.session_id, *args)
+        return wrap
 
-  def __getattr__(self, attr):
-    # hasattr(xmlrpclib_obj, X) returns True for any X, so is not useful here
-    if attr in self.server.system.listMethods():
-      return self._add_session_id(getattr(self.server, attr))
-    else:
-      raise AttributeError("class %s has no attribute '%s'" % (self.__class__.__name__, attr))
 
-  def get_app(self, appname):
-    return filter(lambda d: d['name'] == appname, self.server.list_apps(self.session_id))
+    def __getattr__(self, attr):
+        # connect to server here instead of init to avoid connecting until necessary
+        if self.session_id is None:
+            self.server = xmlrpclib.ServerProxy('https://api.webfaction.com/')
+            self.session_id, _ = self.server.login(fab_settings.ENV_USER, fab_settings.ENV_PASS)
 
-  def app_exists(self, appname):
-    return len(self.get_app(appname)) == 1
+        # hasattr(xmlrpclib_obj, X) returns True for any X, so is not useful here
+        if attr in self.server.system.listMethods():
+            return self._add_session_id(getattr(self.server, attr))
+        else:
+            raise AttributeError("class %s has no attribute '%s'" % (self.__class__.__name__, attr))
+
+
+    def get_app(self, appname):
+        return filter(lambda d: d['name'] == appname, self.list_apps())
+
+
+    def app_exists(self, appname):
+        return len(self.get_app(appname)) == 1
 
 
 def api_add_applications():
@@ -340,7 +346,7 @@ def api_add_git_domain():
 def _webfaction_create_app(app_name,app_type,app_extra=''):
     """creates a app on webfaction of the named type using the webfaction public API."""
     try:
-        if app_name not in [ a['name'] for a in wf.list_apps() ]:
+        if not wf.app_exists(app_name):
             response = wf.create_app(app_name, app_type, False, app_extra)
             print "App on webfaction created: %s" % response
             return response
@@ -355,7 +361,9 @@ def _webfaction_create_app(app_name,app_type,app_extra=''):
 def _webfaction_delete_app(app_name):
     """deletes a named app on webfaction using the webfaction public API."""
     try:
-        if app_name in [ a['name'] for a in wf.list_apps() ]:
+        if wf.app_exists(app_name):
+            with cd(fab_settings.REMOTE_APP_BASE.format(app_name)):
+                run("if test -x apache2/bin/stop; then apache2/bin/stop; fi")
             response = wf.delete_app(app_name)
             print "App on webfaction deleted: %s" % response
             return response
