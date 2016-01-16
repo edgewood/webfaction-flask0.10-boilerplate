@@ -42,5 +42,5 @@ ADMIN_EMAIL = 'webmaster@raleighjaycees.org'
 
 
 PROJECT_ROOT = os.path.realpath(os.path.dirname(__file__))
-REMOTE_APP_BASE = '$HOME/webapps/{0}'
+REMOTE_APP_BASE = 'webapps/{0}'
 REMOTE_APP_ROOT = REMOTE_APP_BASE.format(APP_NAME)

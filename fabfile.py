@@ -18,6 +18,7 @@ from fabric.api import (
     get,
     lcd,
     local,
+    path,
     run,
     settings,
 )
@@ -119,6 +120,7 @@ def local_create_new_repo():
 def local_init_flask_project():
     with lcd(fab_settings.PROJECT_ROOT):
         # download remote default Apache .conf
+        local('rm -rf apache2/conf')
         local('mkdir -p apache2/conf')
         with cd(fab_settings.REMOTE_APP_ROOT):
             get(remote_path='apache2/conf/httpd.conf',
@@ -128,11 +130,11 @@ def local_init_flask_project():
               " apache2/conf/httpd.conf".format(fab_settings.ENV_USER))
         local("sed -i -r -e 's/VENV_NAME/{0}/g'"
               " apache2/conf/httpd.conf".format(fab_settings.VENV_NAME))
-        local("sed -i -r -e 's/DJANGO_APP_NAME/{0}/g'"
-              " apache2/conf/httpd.conf".format(fab_settings.DJANGO_APP_NAME))
+        local("sed -i -r -e 's/APP_NAME/{0}/g'"
+              " apache2/conf/httpd.conf".format(fab_settings.APP_NAME))
 
         # initialize local Flask project
-        with prefix('workon {}'.format(fab_settings.VENV_NAME)):
+        with path('{0}/bin'.format(fab_settings.VENV_NAME), behavior='prepend'):
             local('pip install Flask')
 
 
