@@ -19,6 +19,7 @@ from fabric.api import (
     lcd,
     local,
     path,
+    put,
     run,
     settings,
 )
@@ -146,6 +147,7 @@ def local_init_flask_project():
         # initialize local Flask project
         with path('{0}/bin'.format(fab_settings.VENV_NAME), behavior='prepend'):
             local('pip install Flask')
+            local('pip freeze > requirements.txt')
 
 
 def local_initial_commit():
@@ -212,9 +214,13 @@ def run_deploy_website():
 
 
 def run_install_requirements():
-    run('workon {0} && pip install -r $HOME/src/{1}/website/webapps/django/'
-        'myproject/requirements.txt --upgrade'.format(
-            fab_settings.VENV_NAME, PROJECT_NAME))
+    with cd(fab_settings.REMOTE_APP_ROOT):
+        # site isn't deployed yet, so copy requirements.txt as one-off
+        with lcd(fab_settings.PROJECT_ROOT):
+            put(local_path='requirements.txt',
+                remote_path ='requirements.txt')
+        with path('{0}/bin'.format(fab_settings.VENV_NAME), behavior='prepend'):
+            run('pip install -r requirements.txt')
 
 
 def run_prepare_local_settings():
