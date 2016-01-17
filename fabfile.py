@@ -4,11 +4,10 @@ Make sure to setup your ``fabric_settings.py`` first. As a start, just copy
 ``fabric_settings.py.sample``.
 
 """
-# Inspired in part from https://github.com/bitmazk/webfaction-django1.4-boilerplate.git
+# Adapted in part from https://github.com/bitmazk/webfaction-django1.4-boilerplate.git
 
 from __future__ import with_statement
 
-import os
 import sys
 import xmlrpclib
 
@@ -22,11 +21,8 @@ from fabric.api import (
     put,
     run,
     settings,
-)
-from fabric.contrib.files import append, contains, exists,  sed
-
+    )
 import fabric_settings as fab_settings
-
 
 env.hosts = fab_settings.ENV_HOSTS
 env.user = fab_settings.ENV_USER
@@ -54,7 +50,6 @@ def first_deployment():
     run_deploy_website()
     run_prepare_local_settings()
     run_deploy_website()
-    run_loaddata_auth()
 
 
 def install_local_repo():
@@ -90,26 +85,10 @@ def local_link_repo_with_remote_repo():
 
 
 def local_create_fab_settings():
+    # TODO make sure to remove the fabric gitignore lines when this
+    # is updated to copy fabfile and fabric_settings files.
+    # Right now I don't know what I'll need
     pass
-# TODO
-        # update project deployment fabfile
-#        local('cp myproject/settings/local/local_settings.py.sample'
-#                ' myproject/settings/local/local_settings.py')
-#        local("sed -i -r -e 's/MEDIA_APP_NAME/media/g'"
-#              " myproject/settings/local/local_settings.py")
-#        local("sed -i -r -e 's/STATIC_APP_NAME/static/g'"
-#              " myproject/settings/local/local_settings.py")
-#        local('cp fabfile/fab_settings.py.sample'
-#              ' fabfile/fab_settings.py')
-
-#    fabfile_dir = os.path.join(fab_settings.PROJECT_ROOT, 'website',
-#        'webapps', 'django', 'myproject', 'fabfile')
-#    with lcd(fabfile_dir):
-#        local('cp fab_settings.py.sample fab_settings.py')
-#        local("sed -i -r -e 's/INSERT_PROJECT_NAME/{0}/g'"
-#              " fab_settings.py".format(PROJECT_NAME))
-#        local("sed -i -r -e 's/INSERT_ENV_USER/{0}/g'"
-#              " fab_settings.py".format(fab_settings.ENV_USER))
 
 
 def local_create_new_repo():
@@ -188,16 +167,6 @@ def run_delete_index_files():
 
 def run_delete_previous_attempts():
     api_remove_applications()
-# TODO
-#    with cd('$HOME'):
-#        run('touch .pgpass')
-#        run("sed '/{0}/d' .pgpass > .pgpass_tmp".format(fab_settings.DB_NAME))
-#        run('mv .pgpass_tmp .pgpass')
-#    run('crontab -l > crontab_bak')
-#    run("sed '/{0}.sh/d' crontab_bak > crontab_tmp".format(
-#        fab_settings.PROJECT_NAME))
-#    run('crontab crontab_tmp')
-#    run('rm crontab_tmp')
 
 
 def run_create_virtualenv():
@@ -224,54 +193,8 @@ def run_install_requirements():
 
 
 def run_prepare_local_settings():
+    # TODO update flask local settings file when I get that far
     pass
-#    with cd('$HOME/webapps/{0}/myproject/myproject/settings/local'.format(
-#        fab_settings.DJANGO_APP_NAME)):
-#        run('cp local_settings.py.sample local_settings.py')
-#        sed('local_settings.py', 'backends.sqlite3',
-#            'backends.postgresql_psycopg2')
-#        sed('local_settings.py', 'db.sqlite', fab_settings.DB_NAME)
-#        sed('local_settings.py', '"USER": ""', '"USER": "{0}"'.format(
-#            fab_settings.DB_USER))
-#        sed('local_settings.py', '"PASSWORD": ""', '"PASSWORD": "{0}"'.format(
-#            fab_settings.DB_PASSWORD))
-#        sed('local_settings.py', 'yourproject', '{0}'.format(
-#            PROJECT_NAME))
-#
-#        sed('local_settings.py', '##EMAIL_BACKEND', 'EMAIL_BACKEND')
-#
-#        sed('local_settings.py', 'FROM_EMAIL = "info@example.com"',
-#            'FROM_EMAIL = "{0}"'.format(fab_settings.EMAIL_DEFAULT_FROM_EMAIL))
-#        sed('local_settings.py', 'MAILER_EMAIL_BACKEND', '#MAILER_EMAIL_BACKEND')  # NOQA
-#        sed('local_settings.py', 'TEST_EMAIL_BACKEND_RECEPIENTS', '#TEST_EMAIL_BACKEND_RECEPIENTS')  # NOQA
-#
-#        sed('local_settings.py', 'FROM_EMAIL =', '#FROM_EMAIL =')
-#        sed('local_settings.py', '##FROM_EMAIL', 'FROM_EMAIL')
-#        sed('local_settings.py', 'DEFAULT_#FROM_EMAIL', 'DEFAULT_FROM_EMAIL')
-#
-#        sed('local_settings.py', 'EMAIL_SUBJECT_PREFIX', '#EMAIL_SUBJECT_PREFIX')  # NOQA
-#        sed('local_settings.py', '##EMAIL_SUBJECT_PREFIX', 'EMAIL_SUBJECT_PREFIX')  # NOQA
-#
-#        sed('local_settings.py', 'EMAIL_HOST =', '#EMAIL_HOST =')
-#        sed('local_settings.py', '##EMAIL_HOST', 'EMAIL_HOST')
-#
-#        sed('local_settings.py', 'EMAIL_HOST_USER = FROM_EMAIL', '#EMAIL_HOST_USER = FROM_EMAIL')  # NOQA
-#        sed('local_settings.py', '#EMAIL_HOST_USER = ""',
-#            'EMAIL_HOST_USER = "{0}"'.format(fab_settings.EMAIL_INBOX))
-#
-#        sed('local_settings.py', 'EMAIL_HOST_PASSWORD', '#EMAIL_HOST_PASSWORD')
-#        sed('local_settings.py', '##EMAIL_HOST_PASSWORD = ""',
-#            'EMAIL_HOST_PASSWORD = "{0}"'.format(fab_settings.EMAIL_PASSWORD))
-#
-#        sed('local_settings.py', 'EMAIL_PORT', '#EMAIL_PORT')
-#        sed('local_settings.py', '##EMAIL_PORT', 'EMAIL_PORT')
-#
-#        sed('local_settings.py', 'MEDIA_APP_NAME', fab_settings.MEDIA_APP_NAME)
-#        sed('local_settings.py', 'STATIC_APP_NAME',
-#            fab_settings.STATIC_APP_NAME)
-#        sed('local_settings.py', 'yourname', fab_settings.ADMIN_NAME)
-#        sed('local_settings.py', 'info@example.com', fab_settings.ADMIN_EMAIL)
-#        run('rm -f *.bak')
 
 
 # ****************************************************************************
