@@ -116,6 +116,16 @@ def local_create_new_repo():
         local('rm -rf .git')
         local('git init')
 
+        gitignore = """
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+
+# Distribution / packaging
+{0}/
+""".format(fab_settings.VENV_NAME)
+        local('printf "{0}" >> .gitignore'.format(gitignore))
+
 
 def local_init_flask_project():
     with lcd(fab_settings.PROJECT_ROOT):
