@@ -109,19 +109,27 @@ __pycache__/
 
 def local_init_flask_project():
     with lcd(fab_settings.PROJECT_ROOT):
-        # download remote default Apache .conf
+        # download remote default Apache httpd.conf
         local('rm -rf apache2/conf')
         local('mkdir -p apache2/conf')
         with cd(fab_settings.REMOTE_APP_ROOT):
             get(remote_path='apache2/conf/httpd.conf',
                 local_path ='apache2/conf/httpd.conf')
+
         # prepare httpd.conf
-        local("sed -i -r -e 's/ENV_USER/{0}/g'"
-              " apache2/conf/httpd.conf".format(fab_settings.ENV_USER))
-        local("sed -i -r -e 's/VENV_NAME/{0}/g'"
-              " apache2/conf/httpd.conf".format(fab_settings.VENV_NAME))
-        local("sed -i -r -e 's/APP_NAME/{0}/g'"
-              " apache2/conf/httpd.conf".format(fab_settings.APP_NAME))
+        app_root_fullpath = '/home/{0}/{1}'.format(fab_settings.ENV_USER,
+            fab_settings.REMOTE_APP_ROOT)
+        python_home = '{0}/{1}'.format(app_root_fullpath, fab_settings.VENV_NAME)
+        # strip '/lib/'... from python-path so app dir is in python path
+        local("sed -i -e '/^\s*WSGIDaemonProcess.*/ s@\(python-path=[^ ]\+\)/lib/[^ ]\+@\\1@'"
+              " apache2/conf/httpd.conf")
+        # add python-home pointed at the virtualenv
+        local("sed -i -e '/^\s*WSGIDaemonProcess.*/ s@$@ python-home={0}@'"
+              " apache2/conf/httpd.conf".format(python_home))
+        # add script alias for index.py
+        local("sed -i -e '/^\s*WSGIDaemonProcess.*/a "
+              "WSGIScriptAlias / {0}/htdocs/index.py'"
+              " apache2/conf/httpd.conf".format(app_root_fullpath))
 
         # initialize local Flask project
         with path('{0}/bin'.format(fab_settings.VENV_NAME), behavior='prepend'):
