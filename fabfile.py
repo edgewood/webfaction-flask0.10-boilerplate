@@ -66,6 +66,7 @@ def install_server():
     run_create_virtualenv()
     run_create_git_repo()
     run_delete_index_files()
+    api_add_app_to_website()
 
 
 # ****************************************************************************
@@ -174,6 +175,7 @@ def run_delete_index_files():
 
 
 def run_delete_previous_attempts():
+    api_remove_app_from_website()
     api_remove_applications()
 
 
@@ -291,6 +293,50 @@ def api_add_git_domain():
 
 
 @_webfaction_init
+def _webfaction_update_website_apps(apps_updater):
+    """ add app to website """
+    # find websites that have the domain
+    domain = fab_settings.APP_DOMAIN
+    site = filter(lambda s: domain in s['subdomains'], wf.list_websites())
+
+    if site:
+        site = site[0]
+
+        # call apps_updater to make changes to apps list
+        apps = apps_updater(site['website_apps'])
+
+        # update site with (possibly) changed apps list
+        wf.update_website(site['name'], site['ip'], site['https'],
+                site['subdomains'], *apps)
+    else:
+        print "Could not add {0} to {1}".format(fab_settings.APP_NAME, domain)
+        sys.exit(1)
+
+
+@_webfaction_init
+def api_add_app_to_website():
+    def app_add(apps):
+        # add new app to list
+        if not filter(lambda a: fab_settings.APP_NAME == a[0], apps):
+            apps.append([fab_settings.APP_NAME, fab_settings.APP_URL])
+
+        return apps
+
+    _webfaction_update_website_apps(app_add)
+
+
+@_webfaction_init
+def api_remove_app_from_website():
+    def app_remove(apps):
+        name = fab_settings.APP_NAME
+        url = fab_settings.APP_URL
+        # filter out apps that match name and URL
+        return filter(lambda a: not( name == a[0] and url == a[1] ), apps)
+
+    _webfaction_update_website_apps(app_remove)
+
+
+@_webfaction_init
 def _webfaction_create_app(app_name,app_type,app_extra=''):
     """creates a app on webfaction of the named type using the webfaction public API."""
     try:
@@ -304,6 +350,7 @@ def _webfaction_create_app(app_name,app_type,app_extra=''):
     except xmlrpclib.Fault:
         print "could not create app %s on webfaction, app name maybe already in use" % app_name
         sys.exit(1)
+
 
 @_webfaction_init
 def _webfaction_delete_app(app_name):

@@ -21,6 +21,9 @@ APP_TYPE = 'mod_wsgi4421-python35'          # mod_wsgi 4.4.21/Python 3.5
 STATIC_TYPE = 'static_only'                 # Static only (no .htaccess)
 GIT_TYPE = 'git_230'                        # Git 2.3.0 - not needed if git app is already set up
 
+APP_DOMAIN = 'example.com'
+APP_URL = '/foo'
+
 DB_USER = '{0}_{1}'.format(ENV_USER, PROJECT_NAME)
 DB_NAME = DB_USER
 DB_PASSWORD = 'XXXXXX'
