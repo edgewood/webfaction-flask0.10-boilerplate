@@ -131,6 +131,9 @@ def local_init_flask_project():
         local("sed -i -e '/^\s*WSGIDaemonProcess.*/a "
               "WSGIScriptAlias / {0}/htdocs/index.py'"
               " apache2/conf/httpd.conf".format(app_root_fullpath))
+        # prepare webfaction.py with APP_URL
+        local("sed -i -e 's!@APP_URL@!{0}!'"
+              " htdocs/webfaction.py".format(fab_settings.APP_URL))
 
         # initialize local Flask project
         with path('{0}/bin'.format(fab_settings.VENV_NAME), behavior='prepend'):
