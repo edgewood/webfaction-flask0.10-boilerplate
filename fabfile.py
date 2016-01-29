@@ -151,8 +151,19 @@ def local_init_flask_project():
 
 def local_initial_commit():
     with lcd(fab_settings.PROJECT_ROOT):
-        local('git add .')
+        flask_project_files = [
+                '.gitignore',
+                'requirements.txt',
+                'fabfile.py',
+                'fabric_settings.py',
+                'apache2/',
+                'myapp/',
+                'htdocs/',
+        ]
+        for project_file in flask_project_files:
+            local('git add "{0}"'.format(project_file))
         local('git commit -am "Initial commit."')
+
 
 def local_create_virtualenv():
     with lcd(fab_settings.PROJECT_ROOT):
