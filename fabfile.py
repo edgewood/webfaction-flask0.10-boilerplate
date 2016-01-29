@@ -86,10 +86,19 @@ def local_link_repo_with_remote_repo():
 
 
 def local_create_fab_settings():
-    # TODO make sure to remove the fabric gitignore lines when this
-    # is updated to copy fabfile and fabric_settings files.
-    # Right now I don't know what I'll need
-    pass
+    with lcd(fab_settings.PROJECT_ROOT):
+        local('cp config/fabfile.py fabfile.py')
+        local('cp config/fabric_settings.py fabric_settings.py')
+        local('sed -i -e "s/@HOSTS@/{0}/"'
+              ' -e "s/@USER@/{1}/"'
+              ' -e "s!@REMOTE_APP_ROOT@!{2}!"'
+              ' -e "s/@VENV@/{3}/"'
+              ' fabric_settings.py'.format(
+                  repr(fab_settings.ENV_HOSTS),
+                  fab_settings.ENV_USER,
+                  fab_settings.REMOTE_APP_ROOT,
+                  fab_settings.VENV_NAME,
+                  ))
 
 
 def local_create_new_repo():
