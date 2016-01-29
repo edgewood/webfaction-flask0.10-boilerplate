@@ -118,8 +118,7 @@ def local_init_flask_project():
                 local_path ='apache2/conf/httpd.conf')
 
         # prepare httpd.conf
-        app_root_fullpath = '/home/{0}/{1}'.format(fab_settings.ENV_USER,
-            fab_settings.REMOTE_APP_ROOT)
+        app_root_fullpath = fab_settings.REMOTE_APP_ROOT_FULLPATH
         python_home = '{0}/{1}'.format(app_root_fullpath, fab_settings.VENV_NAME)
         # strip '/lib/'... from python-path so app dir is in python path
         local("sed -i -e '/^\s*WSGIDaemonProcess.*/ s@\(python-path=[^ ]\+\)/lib/[^ ]\+@\\1@'"
@@ -155,12 +154,18 @@ def local_create_virtualenv():
 # REMOTE TASKS
 # ****************************************************************************
 def run_create_git_repo():
-    run('rm -rf $HOME/webapps/git/repos/{0}'.format(
-        fab_settings.GIT_REPO_NAME))
+    run('rm -rf $HOME/webapps/git/repos/{0}'.format(fab_settings.GIT_REPO_NAME))
     with cd('$HOME/webapps/git'):
         run('git init --bare ./repos/{0}'.format(fab_settings.GIT_REPO_NAME))
     with cd('$HOME/webapps/git/repos/{0}'.format(fab_settings.GIT_REPO_NAME)):
         run('git config http.receivepack true')
+        # pushes to remote repo deploys files to app root
+        with cd('hooks'):
+            hook_content = """
+GIT_WORK_TREE={0} git checkout --force
+""".format(fab_settings.REMOTE_APP_ROOT_FULLPATH)
+            run('printf "%s" "{0}" > post-receive'.format(hook_content))
+            run('chmod +x post-receive')
 
 
 def run_create_ssh_dir():
