@@ -1,48 +1,35 @@
 """Settings for ``fabfile.py``.
 
-Replace these settings with your Webfaction username and your desired project
-name. Usually both will be the same unless you are deploying multiple Django
-apps on the same Webfaction account.
-
+Replace these settings with your information.
 """
-import os
 
+import os
 
 ENV_USER = 'username'                         # Webfaction username
 ENV_PASS = 'XXXXXXXX'                         # Webfaction password
-ENV_HOSTS = ['{0}.webfactional.com'.format(ENV_USER), ]
-PROJECT_NAME = 'projectname'
+PROJECT_NAME = 'projectname'                  # desired project name
 
-APP_NAME = '{0}_flask'.format(PROJECT_NAME)
-STATIC_NAME = '{0}_static'.format(PROJECT_NAME)
+APP_DOMAIN = 'example.com'      # domain the app will be deployed on
+APP_URL = '/foo'                # url path the app will be served on
 
+# Webfaction app types for Flask, static app, and git repo app.  You might
+# want to update these as new versions are released.
+#
 # See https://docs.webfaction.com/xmlrpc-api/apps.html#application-types for types
 APP_TYPE = 'mod_wsgi4421-python35'          # mod_wsgi 4.4.21/Python 3.5
 STATIC_TYPE = 'static_only'                 # Static only (no .htaccess)
 GIT_TYPE = 'git_230'                        # Git 2.3.0 - not needed if git app is already set up
 
-APP_DOMAIN = 'example.com'
-APP_URL = '/foo'
+VENV_NAME = 'venv'                                # name of virtualenv
+VENV_COMMAND = 'pyvenv-3.5 {0}'.format(VENV_NAME) # command to create venv
 
-DB_USER = '{0}_{1}'.format(ENV_USER, PROJECT_NAME)
-DB_NAME = DB_USER
-DB_PASSWORD = 'XXXXXX'
-
-VENV_NAME = 'venv'
-VENV_COMMAND = 'pyvenv-3.5 {0}'.format(VENV_NAME)
+# Settings that are calculated from other settings.  You can change these, but
+# you usually don't have to.
+ENV_HOSTS = ['{0}.webfactional.com'.format(ENV_USER), ]
+APP_NAME = '{0}_flask'.format(PROJECT_NAME)
+STATIC_NAME = '{0}_static'.format(PROJECT_NAME)
 
 GIT_REPO_NAME = PROJECT_NAME
-
-# The default email that comes from the application.  This might
-# be webmaster@raleighjaycees.org, or an app-specific email address
-EMAIL_DEFAULT_FROM_EMAIL = 'webmaster@raleighjaycees.org'
-EMAIL_INBOX = '{0}_{1}'.format(ENV_USER, PROJECT_NAME)
-EMAIL_PASSWORD = 'XXXXXX'
-
-
-ADMIN_NAME = 'Raleigh Jaycee Webmaster'
-ADMIN_EMAIL = 'webmaster@raleighjaycees.org'
-
 
 PROJECT_ROOT = os.path.realpath(os.path.dirname(__file__))
 REMOTE_APP_BASE = 'webapps/{0}'
