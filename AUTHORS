@@ -1,0 +1,9 @@
+Ed Blackman (ed@edgewood.to):
+- stripped down webfaction-django1.4-boilerplate, then rebuilt it to install
+  Flask instead;
+- created the Webfaction API class and API functions
+- created the basic Flask app
+
+Authors and contributors to webfaction-django1.4-boilerplate:
+    * Martin Brochhaus (https://github.com/mbrochh)
+    * Micky Hulse (https://github.com/mhulse)

@@ -1,10 +1,10 @@
-"""Fabfile for webfaction-flask-boilerplate``.
+"""Fabfile for webfaction-flask0.10-boilerplate``.
 
 Make sure to setup your ``fabric_settings.py`` first. As a start, just copy
 ``fabric_settings.py.sample``.
 
 """
-# Adapted in part from https://github.com/bitmazk/webfaction-django1.4-boilerplate.git
+# Basic structure from https://github.com/bitmazk/webfaction-django1.4-boilerplate.git
 
 from __future__ import with_statement
 
