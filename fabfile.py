@@ -8,6 +8,7 @@ Make sure to setup your ``fabric_settings.py`` first. As a start, just copy
 
 from __future__ import with_statement
 
+import getpass
 import sys
 import xmlrpclib
 
@@ -257,7 +258,13 @@ class _Webfaction:
         # connect to server here instead of init to avoid connecting until necessary
         if self.session_id is None:
             self.server = xmlrpclib.ServerProxy('https://api.webfaction.com/')
-            self.session_id, _ = self.server.login(fab_settings.ENV_USER, fab_settings.ENV_PASS)
+
+            password = getattr(fab_settings, 'ENV_PASS', None)
+
+            if password is None:
+                password = getpass.getpass('Webfaction password: ')
+
+            self.session_id, _ = self.server.login(fab_settings.ENV_USER, password)
 
         # hasattr(xmlrpclib_obj, X) returns True for any X, so is not useful here
         if attr in self.server.system.listMethods():

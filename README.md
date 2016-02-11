@@ -60,6 +60,8 @@ These settings must be updated:
 - ``ENV_USER`` - your Webfaction username.
 - ``ENV_PASS`` - your Webfaction password.  Webfaction doesn't offer an API
   access token, so your password is required for the automated server setup.
+  If you're uncomfortable writing this in, set to None and you'll be prompted
+  for your password when it's needed.
 - ``PROJECT_NAME`` - the name for this project.
 - ``APP_DOMAIN`` - which of your domains to deploy the app on.
 - ``APP_URL`` - the URL path to deploy the app on.  '/' for the root of the
@@ -115,4 +117,3 @@ Git repo, and `` fab deploy `` to push it to Webfaction and deploy it.
  - Link flask /static subdir to Webfaction static app
  - Autogenerate secret key
  - Create Flask settings, including local settings
- - Prompt for ENV\_PASS if not provided
