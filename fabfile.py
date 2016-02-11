@@ -48,7 +48,6 @@ def onetime_setup():
 
 def first_deployment():
     run_install_requirements()
-    run_deploy_website()
     run_prepare_local_settings()
     run_deploy_website()
 
@@ -214,11 +213,8 @@ def run_create_virtualenv():
 
 
 def run_deploy_website():
-    with cd(fab_settings.REMOTE_APP_ROOT):
-        with path('{0}/bin'.format(fab_settings.VENV_NAME), behavior='prepend'):
-            pass
-            # TODO
-            #run('deploy-website-{1}.sh{2}'.format(PROJECT_NAME, args))
+    with lcd(fab_settings.PROJECT_ROOT):
+        local('fab deploy')
 
 
 def run_install_requirements():
