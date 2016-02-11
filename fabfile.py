@@ -167,6 +167,8 @@ def local_initial_commit():
         for project_file in flask_project_files:
             local('git add "{0}"'.format(project_file))
         local('git commit -am "Initial commit."')
+        # remove files not under version control
+        local('git clean -d -f')
 
 
 def local_create_virtualenv():
