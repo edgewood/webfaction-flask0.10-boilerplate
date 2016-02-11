@@ -22,6 +22,12 @@ def restart():
 
 def deploy():
     local('git push origin')
+    with cd('$HOME/webapps'):
+        run('rsync {0} {1}/myapp/static/ {2}/'.format(
+            fab_settings.RSYNC_STATIC_ARGS,
+            fab_settings.APP_NAME,
+            fab_settings.STATIC_NAME
+            ))
     with cd(fab_settings.REMOTE_APP_ROOT):
         with path('{0}/bin'.format(fab_settings.VENV_NAME), behavior='prepend'):
             run('pip install --upgrade -r requirements.txt')

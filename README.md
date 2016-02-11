@@ -113,7 +113,5 @@ Update it with your desired behavior, test it locally, commit it to your local
 Git repo, and `` fab deploy `` to push it to Webfaction and deploy it.
 
 ## TODO
- - Set up Webfaction static app to serve static content
- - Link flask /static subdir to Webfaction static app
  - Autogenerate secret key
  - Create Flask settings, including local settings

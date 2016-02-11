@@ -65,7 +65,7 @@ def install_server():
     api_add_applications()
     run_create_virtualenv()
     run_create_git_repo()
-    run_delete_index_files()
+    run_configure_static_application()
     api_add_app_to_website()
 
 
@@ -93,11 +93,15 @@ def local_create_fab_settings():
               ' -e "s/@USER@/{1}/"'
               ' -e "s!@REMOTE_APP_ROOT@!{2}!"'
               ' -e "s/@VENV@/{3}/"'
+              ' -e "s/@APPNAME@/{4}/"'
+              ' -e "s/@STATICNAME@/{5}/"'
               ' fabric_settings.py'.format(
                   repr(fab_settings.ENV_HOSTS),
                   fab_settings.ENV_USER,
                   fab_settings.REMOTE_APP_ROOT,
                   fab_settings.VENV_NAME,
+                  fab_settings.APP_NAME,
+                  fab_settings.STATIC_NAME,
                   ))
 
 
@@ -197,9 +201,8 @@ def run_create_ssh_dir():
             run('chmod 700 .ssh')
 
 
-def run_delete_index_files():
-    run('rm -f $HOME/webapps/{0}/index.html'.format(
-        fab_settings.STATIC_NAME))
+def run_configure_static_application():
+    run('rm -f $HOME/webapps/{0}/index.html'.format(fab_settings.STATIC_NAME))
 
 
 def run_delete_previous_attempts():
@@ -344,12 +347,30 @@ def _webfaction_update_website_apps(apps_updater):
         sys.exit(1)
 
 
+def _static_url(url):
+    if url[-1] == '/':
+        return '{0}static'.format(url)
+    else:
+        return '{0}/static'.format(url)
+
+
+site_apps = (
+        # Flask app on APP_URL
+        ( fab_settings.APP_NAME, fab_settings.APP_URL, ),
+        # Static app on APP_URL/static
+        ( fab_settings.STATIC_NAME, _static_url(fab_settings.APP_URL), ),
+    )
+
+
 @_webfaction_init
 def api_add_app_to_website():
     def app_add(apps):
-        # add new app to list
-        if not filter(lambda a: fab_settings.APP_NAME == a[0], apps):
-            apps.append([fab_settings.APP_NAME, fab_settings.APP_URL])
+        for app in site_apps:
+            name = app[0]
+            url = app[1]
+
+            if not filter(lambda a: name == a[0] and url == a[1], apps):
+                apps.append([name, url])
 
         return apps
 
@@ -359,10 +380,14 @@ def api_add_app_to_website():
 @_webfaction_init
 def api_remove_app_from_website():
     def app_remove(apps):
-        name = fab_settings.APP_NAME
-        url = fab_settings.APP_URL
-        # filter out apps that match name and URL
-        return filter(lambda a: not( name == a[0] and url == a[1] ), apps)
+        for app in site_apps:
+            name = app[0]
+            url = app[1]
+
+            # filter out apps that match name and URL
+            apps = filter(lambda a: not( name == a[0] and url == a[1] ), apps)
+
+        return apps
 
     _webfaction_update_website_apps(app_remove)
 
