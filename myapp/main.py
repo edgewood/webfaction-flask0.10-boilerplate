@@ -1,17 +1,16 @@
+import os
+
 from flask import (
     Flask,
     flash,
     render_template,
     request,
     )
+from myapp import config
 
-# configuration
-DEBUG = True
-SECRET_KEY = 'development key'  # TODO generate random key for deployed app
-
-# create application
+# create and configure application
 app = Flask(__name__)
-app.config.from_object(__name__)
+config.configure_app(app)
 
 @app.route('/', methods=['GET', 'POST'])
 def hello():

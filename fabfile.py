@@ -8,7 +8,9 @@ Make sure to setup your ``fabric_settings.py`` first. As a start, just copy
 
 from __future__ import with_statement
 
+import binascii
 import getpass
+import os
 import sys
 import xmlrpclib
 
@@ -152,6 +154,16 @@ def local_init_flask_project():
             local('pip install Flask')
             local('pip freeze > requirements.txt')
 
+        # generate random SECRET_KEYs for config
+        local('sed -e "s/@DEVKEY@/{0}/"'
+              ' -e "s/@TESTKEY@/{1}/"'
+              ' -e "s/@PRODKEY@/{2}/"'
+              ' config/myapp/config.py > myapp/config.py'.format(
+                  binascii.hexlify(os.urandom(24)).decode('ascii'),
+                  binascii.hexlify(os.urandom(24)).decode('ascii'),
+                  binascii.hexlify(os.urandom(24)).decode('ascii'),
+                  ))
+
 
 def local_initial_commit():
     with lcd(fab_settings.PROJECT_ROOT):
@@ -233,8 +245,9 @@ def run_install_requirements():
 
 
 def run_prepare_local_settings():
-    # TODO update flask local settings file when I get that far
-    pass
+    # create empty settings.cfg ready for production-only configuration
+    with cd(fab_settings.REMOTE_APP_ROOT):
+        run('touch settings.cfg')
 
 
 # ****************************************************************************

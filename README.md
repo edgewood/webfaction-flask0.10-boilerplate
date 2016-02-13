@@ -111,7 +111,3 @@ This will:
 You now have the sample Flask app running locally and deployed remotely.
 Update it with your desired behavior, test it locally, commit it to your local
 Git repo, and `` fab deploy `` to push it to Webfaction and deploy it.
-
-## TODO
- - Autogenerate secret key
- - Create Flask settings, including local settings
